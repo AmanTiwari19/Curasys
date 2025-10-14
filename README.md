@@ -1,7 +1,7 @@
 # 🏥 CuraSys - Hospital Management System
 
 ## 🔗 Project Links
-- 🌐 [Live Demo](https://curasys.netlify.app/) <!-- Replace with your own if needed -->
+- 🌐 [Live Demo](https://curasys-admin.netlify.app) <!-- Replace with your own if needed -->
 
 ## 📖 Overview
 
