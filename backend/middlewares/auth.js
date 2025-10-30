@@ -41,15 +41,40 @@ export const isPatientAuthenticated = catchAsyncErrors(
   }
 );
 
-export const isAuthorized = (...roles) => {
-  return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
+
+export const isAuthenticatedAndAuthorized = (...roles) => {
+  return catchAsyncErrors(async (req, res, next) => {
+    // Get token from cookies
+    const token = req.cookies.patientToken || req.cookies.token;
+
+    if (!token) {
+      return next(new ErrorHandler("User is not authenticated!", 401));
+    }
+
+    // Verify the token using the secret key
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+    //  Find user from DB and attach to req
+    req.user = await User.findById(decoded.id);
+
+    if (!req.user) {
+      return next(new ErrorHandler("User not found!", 404));
+    }
+
+    // 4️Check role authorization
+    if (roles.length && !roles.includes(req.user.role)) {
       return next(
         new ErrorHandler(
-          `${req.user.role} not allowed to access this resource!`
+          `${req.user.role} not authorized to access this resource!`,
+          403
         )
       );
     }
+
+    //  Everything OK → proceed
     next();
-  };
+  });
 };
+
+
+
