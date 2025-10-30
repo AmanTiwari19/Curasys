@@ -24,7 +24,7 @@ export const postAppointment = catchAsyncErrors(async (req, res, next) => {
     !lastName ||
     !email ||
     !phone ||
-    !nic ||
+    !adhar_card_no ||
     !dob ||
     !gender ||
     !appointment_date ||
@@ -60,7 +60,7 @@ export const postAppointment = catchAsyncErrors(async (req, res, next) => {
     lastName,
     email,
     phone,
-    nic,
+    adhar_card_no ,
     dob,
     gender,
     appointment_date,
@@ -74,7 +74,7 @@ export const postAppointment = catchAsyncErrors(async (req, res, next) => {
     doctorId,
     patientId,
   });
-  res.status(200).json({
+  res.status(201).json({
     success: true,
     appointment,
     message: "Appointment Send!",
@@ -113,7 +113,7 @@ export const deleteAppointment = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Appointment Not Found!", 404));
   }
   await appointment.deleteOne();
-  res.status(200).json({
+  res.status(204).json({
     success: true,
     message: "Appointment Deleted!",
   });
