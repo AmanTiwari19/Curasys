@@ -88,24 +88,37 @@ export const getAllAppointments = catchAsyncErrors(async (req, res, next) => {
     appointments,
   });
 });
-export const updateAppointmentStatus = catchAsyncErrors(
-  async (req, res, next) => {
-    const { id } = req.params;
-    let appointment = await Appointment.findById(id);
-    if (!appointment) {
-      return next(new ErrorHandler("Appointment not found!", 404));
-    }
-    appointment = await Appointment.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-      useFindAndModify: false,
-    });
-    res.status(200).json({
-      success: true,
-      message: "Appointment Status Updated!",
-    });
-  }
-);
+export const updateAppointmentStatus = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+  let appointment = await Appointment.findById(id).populate("patientId", "email first_name");
+  if (!appointment) return next(new ErrorHandler("Appointment not found!", 404));
+
+  appointment = await Appointment.findByIdAndUpdate(id, req.body, {
+    new: true,
+    runValidators: true,
+    useFindAndModify: false,
+  });
+
+  // --- Send mail to patient ---
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: { user: process.env.SMTP_MAIL, pass: process.env.SMTP_PASSWORD },
+  });
+
+  await transporter.sendMail({
+    from: process.env.SMTP_MAIL,
+    to: appointment.patientId.email,
+    subject: "Appointment Status Updated",
+    text: `Hi ${appointment.patientId.first_name}, your appointment status is now "${appointment.status}".`,
+  });
+  // -----------------------------
+
+  res.status(200).json({
+    success: true,
+    message: "Appointment Status Updated and Mail Sent!",
+  });
+});
+
 export const deleteAppointment = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
   const appointment = await Appointment.findById(id);
